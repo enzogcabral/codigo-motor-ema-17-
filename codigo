@@ -1,3 +1,5 @@
+//usando C++
+
 const int dirPin = 2;
 const int stepPin = 3;
 
