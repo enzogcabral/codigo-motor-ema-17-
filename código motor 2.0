@@ -1,0 +1,21 @@
+const int dirPin = 2;
+const int stepPin = 3;
+
+void setup()
+{
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+
+  // Define um único sentido de rotação
+  digitalWrite(dirPin, HIGH);
+}
+
+void loop()
+{
+  // Gira continuamente
+  digitalWrite(stepPin, HIGH);
+  delayMicroseconds(255);
+
+  digitalWrite(stepPin, LOW);
+  delayMicroseconds(255);
+}
