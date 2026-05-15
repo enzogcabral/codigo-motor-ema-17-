@@ -1,0 +1,224 @@
+// ===============================
+// MOTOR
+// ===============================
+
+const byte MOTORA0_PIN = 5;
+const byte MOTORA1_PIN = 6;
+
+// ===============================
+// BOTÕES
+// ===============================
+
+const byte BOT0_PIN = 10;
+const byte BOT1_PIN = 9;
+const byte BOT2_PIN = 8;
+const byte BOT3_PIN = 7;
+
+// ===============================
+// SENSOR
+// ===============================
+
+const byte SENSOR_PIN = 2;
+
+// ===============================
+// VARIÁVEIS
+// ===============================
+
+byte andar_atual = 0;
+byte set_point = 0;
+
+// trava para evitar múltiplas leituras
+bool sensorLiberado = true;
+
+// ===============================
+// SETUP
+// ===============================
+
+void setup() {
+
+  Serial.begin(9600);
+
+  pinMode(MOTORA0_PIN, OUTPUT);
+  pinMode(MOTORA1_PIN, OUTPUT);
+
+  pinMode(BOT0_PIN, INPUT_PULLUP);
+  pinMode(BOT1_PIN, INPUT_PULLUP);
+  pinMode(BOT2_PIN, INPUT_PULLUP);
+  pinMode(BOT3_PIN, INPUT_PULLUP);
+
+  pinMode(SENSOR_PIN, INPUT_PULLUP);
+
+  pararMotor();
+
+  Serial.println("Sistema iniciado");
+}
+
+// ===============================
+// LOOP
+// ===============================
+
+void loop() {
+
+  lerBotoes();
+
+  controlarElevador();
+}
+
+// ===============================
+// BOTÕES
+// ===============================
+
+void lerBotoes() {
+
+  if (digitalRead(BOT0_PIN) == LOW) {
+
+    set_point = 0;
+
+    Serial.println("Destino: 0");
+
+    esperarSoltarBotao(BOT0_PIN);
+  }
+
+  if (digitalRead(BOT1_PIN) == LOW) {
+
+    set_point = 1;
+
+    Serial.println("Destino: 1");
+
+    esperarSoltarBotao(BOT1_PIN);
+  }
+
+  if (digitalRead(BOT2_PIN) == LOW) {
+
+    set_point = 2;
+
+    Serial.println("Destino: 2");
+
+    esperarSoltarBotao(BOT2_PIN);
+  }
+
+  if (digitalRead(BOT3_PIN) == LOW) {
+
+    set_point = 3;
+
+    Serial.println("Destino: 3");
+
+    esperarSoltarBotao(BOT3_PIN);
+  }
+}
+
+// ===============================
+// CONTROLE
+// ===============================
+
+void controlarElevador() {
+
+  // SUBIR
+  if (andar_atual < set_point) {
+
+    subirMotor();
+
+    verificarSubida();
+  }
+
+  // DESCER
+  else if (andar_atual > set_point) {
+
+    descerMotor();
+
+    verificarDescida();
+  }
+
+  // PARAR
+  else {
+
+    pararMotor();
+  }
+}
+
+// ===============================
+// VERIFICAÇÃO SUBIDA
+// ===============================
+
+void verificarSubida() {
+
+  bool sensor = digitalRead(SENSOR_PIN);
+
+  // Detecta apenas uma vez
+  if (sensor == LOW && sensorLiberado) {
+
+    andar_atual++;
+
+    sensorLiberado = false;
+
+    Serial.print("Andar atual: ");
+    Serial.println(andar_atual);
+  }
+
+  // Libera somente quando sair do sensor
+  if (sensor == HIGH) {
+
+    sensorLiberado = true;
+  }
+}
+
+// ===============================
+// VERIFICAÇÃO DESCIDA
+// ===============================
+
+void verificarDescida() {
+
+  bool sensor = digitalRead(SENSOR_PIN);
+
+  // Detecta apenas uma vez
+  if (sensor == LOW && sensorLiberado) {
+
+    andar_atual--;
+
+    sensorLiberado = false;
+
+    Serial.print("Andar atual: ");
+    Serial.println(andar_atual);
+  }
+
+  // Libera somente quando sair do sensor
+  if (sensor == HIGH) {
+
+    sensorLiberado = true;
+  }
+}
+
+// ===============================
+// MOTOR
+// ===============================
+
+void subirMotor() {
+
+  digitalWrite(MOTORA0_PIN, HIGH);
+  digitalWrite(MOTORA1_PIN, LOW);
+}
+
+void descerMotor() {
+
+  digitalWrite(MOTORA0_PIN, LOW);
+  digitalWrite(MOTORA1_PIN, HIGH);
+}
+
+void pararMotor() {
+
+  digitalWrite(MOTORA0_PIN, LOW);
+  digitalWrite(MOTORA1_PIN, LOW);
+}
+
+// ===============================
+// BOTÃO
+// ===============================
+
+void esperarSoltarBotao(byte botao) {
+
+  delay(20);
+
+  while (digitalRead(botao) == LOW) {}
+
+  delay(20);
+}
